@@ -1,0 +1,14 @@
+node_modules/
+public/uploads/
+*.log
+.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.tmp
+*.bak
+test-*.pdf
