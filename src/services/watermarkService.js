@@ -2,6 +2,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
 const fontkit = require('fontkit');
+require('dotenv').config(); // 引入dotenv
 
 // 将角度转换为弧度的辅助函数
 function degreesToRadians(degrees) {
@@ -115,7 +116,7 @@ function addTileWatermark(page, text, fontSize, color, opacity, width, height, f
 async function processWatermark(fileName, watermarkOptions, progressCallback = null) {
   try {
     // 构建文件路径
-    const uploadDir = path.join(__dirname, '../../public/uploads');
+    const uploadDir = path.join(__dirname, '../..', process.env.UPLOAD_DIR || 'public/uploads');
     const inputFilePath = path.join(uploadDir, fileName);
     
     // 检查文件是否存在
@@ -236,7 +237,7 @@ async function processWatermark(fileName, watermarkOptions, progressCallback = n
 async function previewWatermark(fileName, watermarkOptions, progressCallback = null) {
   try {
     // 构建文件路径
-    const uploadDir = path.join(__dirname, '../../public/uploads');
+    const uploadDir = path.join(__dirname, '../..', process.env.UPLOAD_DIR || 'public/uploads');
     const inputFilePath = path.join(uploadDir, fileName);
     
     // 检查文件是否存在

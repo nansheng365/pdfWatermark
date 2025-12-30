@@ -1,11 +1,12 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+require('dotenv').config(); // 引入dotenv
 
 // 配置multer存储引擎
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'public/uploads/');
+    cb(null, process.env.UPLOAD_DIR || 'public/uploads/');
   },
   filename: function (req, file, cb) {
     // 获取原始文件名并确保正确处理中文字符编码
@@ -20,7 +21,7 @@ const storage = multer.diskStorage({
       }
     }
     
-    const uploadDir = 'public/uploads/';
+    const uploadDir = process.env.UPLOAD_DIR || 'public/uploads/';
     const fullPath = path.join(uploadDir, originalName);
     
     // 检查文件是否已存在
@@ -47,11 +48,10 @@ const upload = multer({
     } else {
       cb(new Error('只允许上传PDF文件，当前文件类型: ' + ext));
     }
-  }
-  /*,
+  },
   limits: {
-    fileSize: 50 * 1024 * 1024 // 限制文件大小为50MB（从10MB调整为50MB）
-  }*/
+    fileSize: parseInt(process.env.MAX_FILE_SIZE) || 50 * 1024 * 1024 // 从环境变量获取文件大小限制，默认50MB
+  }
 });
 
 // 处理单个文件上传
@@ -93,7 +93,7 @@ const handleUpload = (req, res) => {
       if (err.code === 'LIMIT_FILE_SIZE') {
         return res.status(400).json({ 
           success: false, 
-          message: '文件大小超出限制（最大50MB）' // 更新错误信息中的大小限制
+          message: `文件大小超出限制（最大${parseInt(process.env.MAX_FILE_SIZE) / (1024 * 1024)}MB）` // 更新错误信息中的大小限制
         });
       } else if (err.code === 'LIMIT_UNEXPECTED_FILE') {
         return res.status(400).json({ 

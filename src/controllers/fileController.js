@@ -1,5 +1,6 @@
 const fs = require('fs').promises;
 const path = require('path');
+require('dotenv').config(); // 引入dotenv
 
 // 简化文件名，去除多余信息，只保留核心名称部分
 function simplifyFileName(fileName) {
@@ -34,7 +35,7 @@ function simplifyFileName(fileName) {
 const getFileList = async (req, res) => {
   try {
     // 定义上传目录路径
-    const uploadDir = path.join(__dirname, '../../public/uploads');
+    const uploadDir = path.join(__dirname, '../..', process.env.UPLOAD_DIR || 'public/uploads');
     
     // 读取目录内容
     const files = await fs.readdir(uploadDir);
@@ -92,7 +93,8 @@ const getFilePreview = async (req, res) => {
     }
     
     // 构建文件路径
-    const filePath = path.join(__dirname, '../../public/uploads', fileName);
+    const uploadDir = path.join(__dirname, '../..', process.env.UPLOAD_DIR || 'public/uploads');
+    const filePath = path.join(uploadDir, fileName);
     
     // 检查文件是否存在
     try {
@@ -139,7 +141,8 @@ const deleteFile = async (req, res) => {
     }
     
     // 构建文件路径
-    const filePath = path.join(__dirname, '../../public/uploads', fileName);
+    const uploadDir = path.join(__dirname, '../..', process.env.UPLOAD_DIR || 'public/uploads');
+    const filePath = path.join(uploadDir, fileName);
     
     // 检查文件是否存在
     try {

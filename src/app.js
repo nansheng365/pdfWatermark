@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+require('dotenv').config(); // 引入dotenv并加载环境变量
 const { handleUpload } = require('./controllers/uploadController');
 const { handleWatermark, handlePreviewWatermark } = require('./controllers/watermarkController');
 const { getFileList, getFilePreview, deleteFile } = require('./controllers/fileController');
@@ -7,7 +8,7 @@ const setupWatermarkRoutes = require('./routes/watermarkRoutes');
 
 // 创建Express应用
 const app = express();
-const PORT = process.env.PORT || 3000;  // 更改端口为3000
+const PORT = process.env.PORT || 3000;  // 从环境变量获取端口，默认3000
 
 // 中间件配置
 app.use(express.json());

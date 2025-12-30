@@ -32,7 +32,8 @@
         .hidden {
             display: none;
         }
-      /* ========== 核心：缩小版美化滑块（尺寸减半） ========== */
+        
+     /* ========== 核心：缩小版美化滑块（尺寸减半） ========== */
     .custom-range {
       height: 1rem; /* 原2rem → 缩小为1rem */
       padding: 0;
@@ -91,7 +92,9 @@
     }
     .custom-range:focus::-moz-range-thumb {
       box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.25); /* 原8px → 4px */
-    }  
+    }
+
+        
     </style>
 </head>
 <body>
@@ -113,6 +116,7 @@
                 </form>
             </div>
         </div>
+        
         <!-- 文件列表区域 -->
         <div class="card mb-4">
             <div class="card-header">
@@ -124,7 +128,7 @@
                 </div>
             </div>
         </div>
-              
+               
         <!-- PDF转首页图片区域 -->
         <div class="card mb-4 pdf-to-image-section">
             <div class="card-header">
@@ -133,7 +137,7 @@
             <div class="card-body">
                 <div class="mb-3">
                     <label for="imageScale" class="form-label">图片缩放比例: <span id="scaleValue">1.5</span>x</label>
-                    <input type="range" class="form-range  custom-range"  id="imageScale" min="0.5" max="3" step="0.1" value="1.5">
+                    <input type="range" class="form-range custom-range" id="imageScale" min="0.5" max="3" step="0.1" value="1.5">
                 </div>
                 <div class="mb-3">
                     <label for="imageFormat" class="form-label">图片格式</label>
@@ -159,8 +163,7 @@
                 </div>
             </div>
         </div>
-        
-  
+ 
         <!-- 水印设置区域 -->
         <div class="card mb-4">
             <div class="card-header">
@@ -401,6 +404,7 @@
                 originalFileName = window.currentPdfToImageFileName.replace(/\.pdf$/i, '');
             }
             link.download = `${originalFileName}.${window.convertedImageFormat}`;
+            
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -458,6 +462,7 @@
                             <button class="btn btn-sm btn-outline-primary preview-btn me-2" data-filename="${encodedFileName}">预览</button>
                             <button class="btn btn-sm btn-outline-danger delete-btn me-2" data-filename="${encodedFileName}">删除</button>
                             ${file.isWatermarked ? 
+                                '<button class="btn btn-sm btn-secondary" disabled>已添加水印</button>' + 
                                 '<a href="/uploads/' + file.name + '" download="' + simplifyFileName(file.name) + '" class="btn btn-sm btn-outline-primary ms-2">下载</a>' : 
                                 '<button class="btn btn-sm btn-outline-success select-btn" data-filename="' + encodedFileName + '">选择</button>'}
                         </div>
@@ -629,8 +634,8 @@
             formData.append('pdfFile', pdfFile);
             
             try {
-                // 使用完整的URL路径
-                const response = await axios.post(`http://${window.location.hostname}:3000/upload`, formData, {
+                // 使用相对路径而不是硬编码端口
+                const response = await axios.post('/upload', formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }

@@ -1,4 +1,5 @@
 const { processWatermark, previewWatermark } = require('../services/watermarkService');
+require('dotenv').config(); // 引入dotenv
 
 /**
  * 处理水印请求控制器

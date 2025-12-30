@@ -1,4 +1,5 @@
 const { handleWatermark, handlePreviewWatermark, handleWatermarkWithProgress, handlePreviewWatermarkWithProgress } = require('../controllers/watermarkController');
+const { handleConvertFirstPage } = require('../controllers/pdfToImageController');
 
 // 水印处理路由
 module.exports = (app) => {
@@ -13,4 +14,7 @@ module.exports = (app) => {
   
   // 支持进度的水印预览路由
   app.get('/preview-watermark-progress', handlePreviewWatermarkWithProgress);
+  
+  // PDF首页转换为图片路由
+  app.post('/convert-first-page', handleConvertFirstPage);
 };

@@ -31,13 +31,26 @@
 npm install
 ```
 
-4. 启动服务器：
+4. 创建环境配置文件：
+   - 复制 `.env.example` 文件并重命名为 `.env`
+   - 根据需要修改配置值
+
+5. 启动服务器：
 
 ```bash
 node src/app.js
 ```
 
-5. 在浏览器中访问 `http://localhost:3000`
+6. 在浏览器中访问 `http://localhost:${PORT}` (端口号由环境变量配置，默认为3000)
+
+## 环境变量配置
+
+项目使用 `.env` 文件管理配置，支持以下变量：
+
+- `PORT`：服务器运行端口（默认：3000）
+- `UPLOAD_DIR`：上传文件存储目录（默认：public/uploads）
+- `MAX_FILE_SIZE`：最大文件上传大小（字节，默认：50000000，即50MB）
+- `ALLOWED_FILE_TYPES`：允许的文件类型（默认：application/pdf）
 
 ## 使用说明
 
@@ -71,6 +84,8 @@ pdfWatermark/
 │   ├── utils/             # 工具函数
 │   └── app.js             # 应用入口文件
 ├── fonts/                 # 字体文件目录
+├── .env                   # 环境变量配置文件
+├── .gitignore             # Git忽略文件配置
 ├── package.json           # 项目配置文件
 └── README.md              # 项目说明文档
 ```
@@ -80,6 +95,7 @@ pdfWatermark/
 - express
 - pdf-lib
 - fontkit
+- dotenv
 
 ## 注意事项
 
@@ -87,6 +103,7 @@ pdfWatermark/
 - 水印文件以 `watermarked-` 前缀命名
 - 支持中文水印（需提供中文字体文件）
 - 浏览器需要支持Canvas和File API
+- 配置通过 `.env` 文件管理，不要将此文件提交到版本控制系统
 
 ## 上传到GitHub指导
 
