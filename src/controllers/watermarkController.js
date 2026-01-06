@@ -28,7 +28,9 @@ const handleWatermark = async (req, res) => {
       fontSize: parseInt(req.body.fontSize) || 20,
       fontColor: req.body.fontColor || '#8B4513',
       opacity: parseInt(req.body.opacity) || 50,
-      position: req.body.position || 'center'
+      position: req.body.position || 'center',
+      fontWeight: req.body.fontWeight || 'normal',
+      startPage: parseInt(req.body.startPage) || 2  // 默认从第二页开始
     };
     
     // 转换透明度值为小数
@@ -99,7 +101,9 @@ const handlePreviewWatermark = async (req, res) => {
       fontSize: parseInt(req.body.fontSize) || 20,
       fontColor: req.body.fontColor || '#8B4513',
       opacity: parseInt(req.body.opacity) || 50,
-      position: req.body.position || 'center'
+      position: req.body.position || 'center',
+      fontWeight: req.body.fontWeight || 'normal',
+      startPage: parseInt(req.body.startPage) || 2  // 默认从第二页开始
     };
     
     // 转换透明度值为小数
@@ -166,7 +170,9 @@ const handleWatermarkWithProgress = async (req, res) => {
       fontSize: parseInt(req.query.fontSize) || 20,
       fontColor: req.query.fontColor || '#8B4513',
       opacity: parseInt(req.query.opacity) || 50,
-      position: req.query.position || 'center'
+      position: req.query.position || 'center',
+      fontWeight: req.query.fontWeight || 'normal',
+      startPage: parseInt(req.query.startPage) || 2  // 默认从第二页开始
     };
     
     // 转换透明度值为小数
@@ -253,7 +259,9 @@ const handlePreviewWatermarkWithProgress = async (req, res) => {
       fontSize: parseInt(req.query.fontSize) || 20,
       fontColor: req.query.fontColor || '#8B4513',
       opacity: parseInt(req.query.opacity) || 50,
-      position: req.query.position || 'center'
+      position: req.query.position || 'center',
+      fontWeight: req.query.fontWeight || 'normal',
+      startPage: parseInt(req.query.startPage) || 2  // 默认从第二页开始
     };
     
     // 转换透明度值为小数
@@ -265,7 +273,7 @@ const handlePreviewWatermarkWithProgress = async (req, res) => {
       res.end();
       return;
     }
-
+    
     // 定义进度回调函数
     const progressCallback = (data) => {
       // 检查响应是否已经结束

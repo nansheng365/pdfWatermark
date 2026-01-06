@@ -59,13 +59,14 @@ const uploadSingle = upload.single('pdfFile');
 
 // 上传文件处理函数
 const handleUpload = (req, res) => {
+/*
   console.log('收到上传请求:', {
     method: req.method,
     url: req.url,
     headers: req.headers,
     contentType: req.headers['content-type']
   });
-  
+  */
   // 检查Content-Type是否为multipart/form-data
   if (!req.headers['content-type'] || !req.headers['content-type'].includes('multipart/form-data')) {
     console.error('无效的Content-Type:', req.headers['content-type']);
@@ -76,12 +77,13 @@ const handleUpload = (req, res) => {
   }
   
   uploadSingle(req, res, function (err) {
+/*
     console.log('Multer处理完成:', {
       error: err,
       file: req.file,
       body: req.body
     });
-    
+    */
     if (err instanceof multer.MulterError) {
       // multer错误
       console.error('Multer错误:', {

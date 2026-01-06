@@ -4,11 +4,6 @@ const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
 const fontkit = require('fontkit');
 require('dotenv').config(); // 引入dotenv
 
-// 将角度转换为弧度的辅助函数
-function degreesToRadians(degrees) {
-  return degrees * (Math.PI / 180);
-}
-
 // 将角度转换为pdf-lib所需的旋转对象
 function degrees(angle) {
   return { angle, type: 'degrees' };
@@ -17,7 +12,7 @@ function degrees(angle) {
 /**
  * 添加对角线水印
  */
-function addDiagonalWatermark(page, text, fontSize, color, opacity, width, height, font) {
+function addDiagonalWatermark(page, text, fontSize, color, opacity, width, height, font, fontWeight = 'normal') {
   // 计算文本的实际宽度和高度
   const textWidth = font.widthOfTextAtSize(text, fontSize);
   const textHeight = font.heightAtSize(fontSize);
@@ -55,7 +50,7 @@ function addDiagonalWatermark(page, text, fontSize, color, opacity, width, heigh
 /**
  * 添加居中水印
  */
-function addCenterWatermark(page, text, fontSize, color, opacity, width, height, font) {
+function addCenterWatermark(page, text, fontSize, color, opacity, width, height, font, fontWeight = 'normal') {
   // 计算文本的实际宽度和高度
   const textWidth = font.widthOfTextAtSize(text, fontSize);
   const textHeight = font.heightAtSize(fontSize);
@@ -77,7 +72,7 @@ function addCenterWatermark(page, text, fontSize, color, opacity, width, height,
 /**
  * 添加平铺水印
  */
-function addTileWatermark(page, text, fontSize, color, opacity, width, height, font) {
+function addTileWatermark(page, text, fontSize, color, opacity, width, height, font, fontWeight = 'normal') {
   // 计算文本的实际宽度和高度
   const textWidth = font.widthOfTextAtSize(text, fontSize);
   const textHeight = font.heightAtSize(fontSize);
@@ -138,10 +133,24 @@ async function processWatermark(fileName, watermarkOptions, progressCallback = n
     // 注册fontkit
     pdfDoc.registerFontkit(fontkit);
     
-    // 尝试加载中文字体，如果失败则回退到标准字体
+    // 根据字体粗细选择字体文件
     let font;
     try {
-      const fontPath = path.join(__dirname, '../../fonts/chinese-font.ttf');
+      let fontPath;
+      if (watermarkOptions.fontWeight === 'bold') {
+        // 尝试加载粗体字体文件
+        fontPath = path.join(__dirname, '../../fonts/chinese-font-bold.ttf');
+        try {
+          await fs.access(fontPath);
+        } catch {
+          // 如果粗体字体不存在，使用常规字体
+          fontPath = path.join(__dirname, '../../fonts/chinese-font.ttf');
+        }
+      } else {
+        // 使用常规字体
+        fontPath = path.join(__dirname, '../../fonts/chinese-font.ttf');
+      }
+      
       const fontBytes = await fs.readFile(fontPath);
       font = await pdfDoc.embedFont(fontBytes);
     } catch (error) {
@@ -160,6 +169,9 @@ async function processWatermark(fileName, watermarkOptions, progressCallback = n
     const pages = pdfDoc.getPages();
     const totalPages = pages.length;
     
+    // 确定水印起始页 (0表示所有页，其他数字表示从指定页开始)
+    const startPage = watermarkOptions.startPage || 2; // 默认从第二页开始
+    
     // 报告开始处理
     if (progressCallback) {
       progressCallback({ type: 'start', totalPages });
@@ -169,18 +181,25 @@ async function processWatermark(fileName, watermarkOptions, progressCallback = n
       const page = pages[i];
       const { width, height } = page.getSize();
       
-      // 根据位置选项添加不同类型的水印
-      switch (watermarkOptions.position) {
-        case 'center':
-          addCenterWatermark(page, watermarkOptions.text, watermarkOptions.fontSize, color, watermarkOptions.opacity, width, height, font);
-          break;
-        case 'tile':
-          addTileWatermark(page, watermarkOptions.text, watermarkOptions.fontSize, color, watermarkOptions.opacity, width, height, font);
-          break;
-        case 'diagonal':
-        default:
-          addDiagonalWatermark(page, watermarkOptions.text, watermarkOptions.fontSize, color, watermarkOptions.opacity, width, height, font);
-          break;
+      // 根据起始页设置决定是否添加水印
+      // startPage为0表示所有页都加水印
+      // startPage为其他值表示从指定页码开始加水印（页码从1开始计数）
+      const shouldAddWatermark = (startPage === 0) || (i + 1 >= startPage);
+      
+      if (shouldAddWatermark) {
+        // 根据位置选项添加不同类型的水印
+        switch (watermarkOptions.position) {
+          case 'center':
+            addCenterWatermark(page, watermarkOptions.text, watermarkOptions.fontSize, color, watermarkOptions.opacity, width, height, font, watermarkOptions.fontWeight);
+            break;
+          case 'tile':
+            addTileWatermark(page, watermarkOptions.text, watermarkOptions.fontSize, color, watermarkOptions.opacity, width, height, font, watermarkOptions.fontWeight);
+            break;
+          case 'diagonal':
+          default:
+            addDiagonalWatermark(page, watermarkOptions.text, watermarkOptions.fontSize, color, watermarkOptions.opacity, width, height, font, watermarkOptions.fontWeight);
+            break;
+        }
       }
       
       // 报告进度
@@ -235,6 +254,7 @@ async function processWatermark(fileName, watermarkOptions, progressCallback = n
  * 修改为最多处理前5页以减少资源消耗
  */
 async function previewWatermark(fileName, watermarkOptions, progressCallback = null) {
+console.log(watermarkOptions.fontWeight);
   try {
     // 构建文件路径
     const uploadDir = path.join(__dirname, '../..', process.env.UPLOAD_DIR || 'public/uploads');
@@ -256,10 +276,29 @@ async function previewWatermark(fileName, watermarkOptions, progressCallback = n
     // 注册fontkit
     pdfDoc.registerFontkit(fontkit);
     
-    // 尝试加载中文字体，如果失败则回退到标准字体
+    // 根据字体粗细选择字体文件
     let font;
     try {
-      const fontPath = path.join(__dirname, '../../fonts/chinese-font.ttf');
+      let fontPath;
+      if (watermarkOptions.fontWeight === 'bold') {
+       // console.log(__dirname);
+        // 尝试加载粗体字体文件 
+        fontPath = path.join(__dirname, '../../fonts/chinese-font-bold.ttf');
+      //  console.log('Trying bold font path:', fontPath);
+        try {
+          await fs.access(fontPath);
+      //    console.log('Bold font exists');
+        } catch {
+          // 如果粗体字体不存在，使用常规字体
+          fontPath = path.join(__dirname, '../../fonts/chinese-font.ttf');
+       //   console.log('Using catch font path:', fontPath);
+        }
+      } else {
+        // 使用常规字体
+        fontPath = path.join(__dirname, '../../fonts/chinese-font.ttf');
+      //  console.log('Using else font path:', fontPath);
+      }
+    //  console.log(fontPath);
       const fontBytes = await fs.readFile(fontPath);
       font = await pdfDoc.embedFont(fontBytes);
     } catch (error) {
@@ -276,7 +315,13 @@ async function previewWatermark(fileName, watermarkOptions, progressCallback = n
     
     // 只处理前5页用于预览，或者总页数小于5时处理所有页面
     const pages = pdfDoc.getPages();
-    const pagesToProcess = Math.min(pages.length, 5); // 最多处理5页
+    const totalPages = pages.length;
+    
+    // 确定水印起始页 (0表示所有页，其他数字表示从指定页开始)
+    const startPage = watermarkOptions.startPage || 2; // 默认从第二页开始
+    
+    // 计算实际需要处理的页面（考虑起始页）
+    const pagesToProcess = Math.min(totalPages, 5); // 最多处理5页
     
     // 报告开始处理
     if (progressCallback) {
@@ -288,18 +333,25 @@ async function previewWatermark(fileName, watermarkOptions, progressCallback = n
       const page = pages[i];
       const { width, height } = page.getSize();
       
-      // 根据位置选项添加不同类型的水印
-      switch (watermarkOptions.position) {
-        case 'center':
-          addCenterWatermark(page, watermarkOptions.text, watermarkOptions.fontSize, color, watermarkOptions.opacity, width, height, font);
-          break;
-        case 'tile':
-          addTileWatermark(page, watermarkOptions.text, watermarkOptions.fontSize, color, watermarkOptions.opacity, width, height, font);
-          break;
-        case 'diagonal':
-        default:
-          addDiagonalWatermark(page, watermarkOptions.text, watermarkOptions.fontSize, color, watermarkOptions.opacity, width, height, font);
-          break;
+      // 根据起始页设置决定是否添加水印
+      // startPage为0表示所有页都加水印
+      // startPage为其他值表示从指定页码开始加水印（页码从1开始计数）
+      const shouldAddWatermark = (startPage === 0) || (i + 1 >= startPage);
+      
+      if (shouldAddWatermark) {
+        // 根据位置选项添加不同类型的水印
+        switch (watermarkOptions.position) {
+          case 'center':
+            addCenterWatermark(page, watermarkOptions.text, watermarkOptions.fontSize, color, watermarkOptions.opacity, width, height, font, watermarkOptions.fontWeight);
+            break;
+          case 'tile':
+            addTileWatermark(page, watermarkOptions.text, watermarkOptions.fontSize, color, watermarkOptions.opacity, width, height, font, watermarkOptions.fontWeight);
+            break;
+          case 'diagonal':
+          default:
+            addDiagonalWatermark(page, watermarkOptions.text, watermarkOptions.fontSize, color, watermarkOptions.opacity, width, height, font, watermarkOptions.fontWeight);
+            break;
+        }
       }
       
       // 报告进度
